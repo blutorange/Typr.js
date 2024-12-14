@@ -10,7 +10,7 @@ yarn add @blutorange/typr.js
 
 Then use via
 
-```
+```js
 import Typr from "@blutorange/typr.js";
 const parsed = Type.parse(arrayBuffer);
 ```
