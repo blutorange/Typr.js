@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "TypeScript+NPM fork of https://github.com/photopea/Typr.js",
   "type": "module",
+  "private": false,
   "packageManager": "yarn@4.5.3",
   "main": "src/index.js",
   "types": "src/index.d.ts",
