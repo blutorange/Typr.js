@@ -1,7 +1,8 @@
 # Typr.js  
 
-Fork of https://github.com/photopea/Typr.js that add a TypeScript declaration file and publishes
-it to NPM. Does not add anything else. Install via
+Fork of https://github.com/photopea/Typr.js that adds a TypeScript declaration file and publishes
+it to NPM. Also makes it usable in node.js by removing a useless reference to `window` in the source
+code. Does not add anything else. Install via
 
 ```
 npm add @xenorange/typr.js
