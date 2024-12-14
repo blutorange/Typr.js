@@ -694,6 +694,20 @@ export interface Util {
     shape: (font: FontObject, str: string, ltr?: boolean) => GlyphInfo[];
 
     /**
+     * Same as {@link shape}, but uses HarfBuzz for advanced text shaping.
+     * Available only once {@link initHB} was called and HarfBuzz is loaded,
+     * i.e. once the callback passed to {@link initHB} was called.
+     * 
+     * Converts a piece of text to a shape, using the font object.
+     * @param Font font object to process.
+     * @param str Text to convert.
+     * @param ltr If true, the text is left-to-right, otherwise right-to-left.
+     * Default is left-to-right.
+     * @returns A geometric description representing the text, one for each glyph.
+     */
+    shapeHB?: (font: FontObject, str: string, ltr?: boolean) => GlyphInfo[];
+
+    /**
      * Converts a shape to a vector path.
      * @param font Font object to process.
      * @param shape Shape to convert.
@@ -707,6 +721,10 @@ export interface Util {
      * can be integrated with a [HarfBuzz](http://www.harfbuzz.org/) shaping library.
      * HarfBuzz supports advanced shaping of Arabic, Urdu, Farsi, Khmer, You need a
      * WASM version of the library. The integration is done through a following function.
+     * 
+     * Once the HarfBuzz is loaded, you can use {@link shapeHB} instead of {@link shape}.
+     * It accepts identical parameters and returns a shape in the identical format, which
+     * can be used with e.g. {@link shapeToPath}.
      * @param url The URL of the HarfBuzz WASM file.
      * @param callback A callback function, that is called when the HarfBuzz is loaded and ready to use.
      */
