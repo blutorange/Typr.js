@@ -10,7 +10,7 @@ export interface Typr {
      * @param buffer Binary data of the TTF or OTF font, such as an {@link ArrayBuffer}.
      * @returns A list of all fonts in the file.
      */
-    parse: (buffer: Iterable<number>) => FontObject[];
+    parse: (buffer: Iterable<number> | ArrayBufferLike) => FontObject[];
 
     /**
      * Functions for working with binary data.
