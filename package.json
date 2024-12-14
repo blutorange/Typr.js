@@ -1,7 +1,7 @@
 {
-  "name": "@blutorange/typr.js",
+  "name": "@xenorange/typr.js",
   "version": "0.1.0",
-  "description": "TypeScript fork of https://github.com/photopea/Typr.js",
+  "description": "TypeScript+NPM fork of https://github.com/photopea/Typr.js",
   "type": "module",
   "packageManager": "yarn@4.5.3",
   "main": "src/index.js",
@@ -28,11 +28,10 @@
   "bugs": {
     "url": "https://github.com/blutorange/Typr.js/issues"
   },
-  "homepage": "https://github.com/fredli74/Typr.js#readme",
+  "homepage": "https://github.com/blutorange/Typr.js#readme",
   "files": [
     "src"
   ],
-  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.7.0"
   }

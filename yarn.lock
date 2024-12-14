@@ -5,9 +5,9 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@blutorange/typr.js@workspace:.":
+"@xenorange/typr.js@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@blutorange/typr.js@workspace:."
+  resolution: "@xenorange/typr.js@workspace:."
   dependencies:
     typescript: "npm:^5.7.0"
   languageName: unknown

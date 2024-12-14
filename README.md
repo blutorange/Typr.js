@@ -4,14 +4,14 @@ Fork of https://github.com/photopea/Typr.js that add a TypeScript declaration fi
 it to NPM. Does not add anything else. Install via
 
 ```
-npm add @blutorange/typr.js
-yarn add @blutorange/typr.js
+npm add @xenorange/typr.js
+yarn add @xenorange/typr.js
 ```
 
 Then use via
 
 ```js
-import Typr from "@blutorange/typr.js";
+import Typr from "@xenorange/typr.js";
 const parsed = Type.parse(arrayBuffer);
 ```
 
