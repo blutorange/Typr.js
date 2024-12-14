@@ -299,8 +299,8 @@ export interface FontName {
     description?: string;
     urlVendor?: string;
     urlDesigner?: string;
-    license?: string;
-    licenseURL?: string;
+    licence?: string;
+    licenceURL?: string;
     typoFamilyName?: string;
     typoSubfamilyName?: string;
     compatibleFull?: string;
