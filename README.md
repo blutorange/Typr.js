@@ -1,5 +1,22 @@
 # Typr.js  
 
+Fork of https://github.com/photopea/Typr.js that add a TypeScript declaration file and publishes
+it to NPM. Does not add anything else. Install via
+
+```
+npm add @blutorange/typr.js
+yarn add @blutorange/typr.js
+```
+
+Then use via
+
+```
+import Typr from "@blutorange/typr.js";
+const parsed = Type.parse(arrayBuffer);
+```
+
+---
+
 [LIVE DEMO](https://photopea.github.io/Typr.js) Typr.js is a Javascript parser and utility for working with fonts (TTF, OTF, TTC). It is an alternative to [opentype.js](https://github.com/nodebox/opentype.js). It is the main text engine for [Photopea image editor](https://www.photopea.com).
 
 * light and small (70 kB unminified uncompressed, 4x smaller than opentype.js)
