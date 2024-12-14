@@ -689,9 +689,9 @@ export interface Util {
      * @param str Text to convert.
      * @param ltr If true, the text is left-to-right, otherwise right-to-left.
      * Default is left-to-right.
-     * @returns A geometric description representing the text.
+     * @returns A geometric description representing the text, one for each glyph.
      */
-    shape: (font: FontObject, str: string, ltr?: boolean) => GlyphInfo;
+    shape: (font: FontObject, str: string, ltr?: boolean) => GlyphInfo[];
 
     /**
      * Converts a shape to a vector path.
