@@ -29,6 +29,10 @@
     "url": "https://github.com/blutorange/Typr.js/issues"
   },
   "homepage": "https://github.com/fredli74/Typr.js#readme",
+  "files": [
+    "src"
+  ],
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.7.0"
   }
