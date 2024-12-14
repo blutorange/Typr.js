@@ -736,6 +736,4 @@ export interface Util {
  * The main entry point of the library. It contains the {@link parse} function
  * and the {@link Util} object for various operations on the font object.
  */
-declare const Typr: Typr;
-
-export default Typr;
+export declare const Typr: Typr;

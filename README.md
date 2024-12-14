@@ -11,8 +11,8 @@ yarn add @xenorange/typr.js
 Then use via
 
 ```js
-import Typr from "@xenorange/typr.js";
-const parsed = Type.parse(arrayBuffer);
+import { Typr } from "@xenorange/typr.js";
+const parsed = Typr.parse(arrayBuffer);
 ```
 
 ---

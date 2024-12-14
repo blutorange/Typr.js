@@ -1,4 +1,4 @@
-import Typr from "../src/index.js";
+import { Typr } from "../src/index.js";
 
 // Basic checks to make sure the declared value actually exists
 
