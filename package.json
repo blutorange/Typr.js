@@ -1,0 +1,35 @@
+{
+  "name": "@blutorange/typr.js",
+  "version": "0.1.0",
+  "description": "TypeScript fork of https://github.com/photopea/Typr.js",
+  "type": "module",
+  "packageManager": "yarn@4.5.3",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    "import": "./src/index.js",
+    "types": "./src/index.d.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node test/types.js",
+    "prepublish": "run typecheck && run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blutorange/Typr.js.git"
+  },
+  "keywords": [
+    "typr.js",
+    "typescript"
+  ],
+  "author": "photopea",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blutorange/Typr.js/issues"
+  },
+  "homepage": "https://github.com/fredli74/Typr.js#readme",
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

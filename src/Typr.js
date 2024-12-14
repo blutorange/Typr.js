@@ -277,7 +277,7 @@ Typr["B"] = {
 		}
 		return s;
 	},
-	_tdec : window["TextDecoder"] ? new window["TextDecoder"]() : null,
+	_tdec : typeof TextDecoder === "function" ? new TextDecoder() : null,
 	readUTF8 : function(buff, p, l) {
 		var tdec = Typr["B"]._tdec;
 		if(tdec && p==0 && l==buff.length) return tdec["decode"](buff);
@@ -1527,3 +1527,5 @@ Typr["T"].cpal = {
 		else throw vsn;//console.log("unknown color palette",vsn);
 	}
 };
+
+export { Typr };

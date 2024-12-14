@@ -1,4 +1,4 @@
-
+import { Typr } from "./Typr.js";
 
 Typr["U"] = {
 	"shape" : function(font,str,ltr) {

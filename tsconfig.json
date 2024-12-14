@@ -1,0 +1,41 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": ".",
+        "target": "ESNext",
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
+        "lib": [
+            "ES2020",
+            "dom"
+        ],
+        "allowJs": true,
+        "checkJs": true,
+        "declaration": true,
+        "esModuleInterop": false,
+        "importHelpers": true,
+        "sourceMap": true,
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "types": [],
+        "strict": true,
+        "alwaysStrict": true,
+        "exactOptionalPropertyTypes": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": true,
+        "strictBindCallApply": true,
+        "strictBuiltinIteratorReturn": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true
+    },
+    "files": [
+        "src/index.d.ts", "test/types.js"
+    ]
+}
