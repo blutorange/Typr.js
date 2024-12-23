@@ -1,12 +1,12 @@
 # Typr.js  
 
-[LIVE DEMO](https://photopea.github.io/Typr.js) Typr.js is a Javascript parser and utility for working with fonts (TTF, OTF, TTC). It is an alternative to [opentype.js](https://github.com/nodebox/opentype.js). It is the main text engine for [Photopea image editor](https://www.photopea.com).
+[LIVE DEMO](https://photopea.github.io/Typr.js) Typr.js is a Javascript parser and utility for working with fonts (TTF, OTF, TTC, WOFF). It is an alternative to [opentype.js](https://github.com/nodebox/opentype.js). It is the main text engine for [Photopea image editor](https://www.photopea.com).
 
-* light and small (70 kB unminified uncompressed, 4x smaller than opentype.js)
+* light and small (110 kB unminified uncompressed, 4x smaller than opentype.js)
 * ultra fast (2x to 5x faster parsing than opentype.js)
 * successfully parsed more than 3000 fonts (opentype.js had problems with many of them)
 * simple structure and easy to extend
-* supports colored (SVG) fonts
+* supports colored (SVG) fonts and variable fonts
 
 ![Typr.js preview](glyphs.png "Typr.js preview")
 
@@ -14,6 +14,7 @@ Typr.js consists of static functions only, it can be easily rewritten into C or 
 
 * `Typr` - main parser, parses the raw data, generates the font object.
 * `Typr.U` - Typr utilities. Basic operations with fonts. Use it as a guide to write your own utilities.
+* `Typr.U.SVG` - SVG-related utilities, use them only when working with SVG fonts.
 
 
 ## Typr
@@ -29,6 +30,7 @@ var fonts = Typr.parse(buffer);
 console.log(fonts[0]);
 ```
 ## Typr.U
+![Typr U structure](https://github.com/user-attachments/assets/ac66bd99-5462-427f-ba62-00b756a56236)
 
 #### `Typr.U.codeToGlyph(font, code)`
 
@@ -36,25 +38,28 @@ console.log(fonts[0]);
 * `code`: integer Unicode code of the character
 * returns an integer index of the glyph, corresponding to the unicode character
 
-#### `Typr.U.shape(font, str, ltr)`
+#### `Typr.U.shape(font, str, prm)`
 
 * `font`: font object
 * `str`: standard JS string
-* `ltr`: true when the text is written from left to right
+* `prm`: parameters object: "ltr":left-to-right, "fts": features, "axs": axes (array of values, a value for each axis)
 * returns a shape: a geometric description of a string. The output is an array of elements. Each element has these parameters `g`: Glyph index, `cl`: Cluster index , `ax, ay`: Advancement of a glyph, `dx, dy`: an offset from a pen, at which the glyph should be drawn.
 
 The shape can have a different length, than the input string (because of ligatures, etc). The cluster index says, which part of string the glyph represents.
 
-#### `Typr.U.glyphToPath(font, gid)`
+#### `Typr.U.glyphToPath(font, gid, ignoreColor, axs)`
 
 * `font`: font object
 * `gid`: index of the glyph, which you want to access
+* `ignoreColor`: ignore a color version of a glyph, if present
+* `axs`: axes (see above)
 * returns the vector path of the outline of the glyph
 
 #### `Typr.U.shapeToPath(font, shape)`
 
 * `font`: font object
-* `shape`: e.g. the output of Typr.U.shape(...) 
+* `shape`: e.g. the output of Typr.U.shape(...)
+* `prm`: parameters object (see above)
 * returns the vector path of the outline of the glyph
 
 Typr.js uses the following structure to represent the path:
