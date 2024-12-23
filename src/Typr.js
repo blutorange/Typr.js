@@ -4,9 +4,9 @@ var Typr = {};
 
 Typr["parse"] = function(buff)
 {
+	var bin = Typr["B"];
+	
 	var readFont = function(data, idx, offset,tmap) {
-		var bin = Typr["B"];
-		
 		var T = Typr["T"];
 		var prsr = {
 			"cmap":T.cmap,
@@ -27,13 +27,19 @@ Typr["parse"] = function(buff)
 			"GPOS",
 			"GSUB",
 			"GDEF",*/
+			"GSUB":T.GSUB,
 			"CBLC":T.CBLC,
 			"CBDT":T.CBDT,
 			
 			"SVG ":T.SVG,
 			"COLR":T.colr,
 			"CPAL":T.cpal,
-			"sbix":T.sbix
+			"sbix":T.sbix,
+			
+			"fvar":T.fvar,
+			"gvar":T.gvar,
+			"avar":T.avar,
+			"HVAR":T.HVAR
 			//"VORG",
 		};
 		var obj = {"_data":data, "_index":idx, "_offset":offset};
@@ -49,9 +55,41 @@ Typr["parse"] = function(buff)
 		return obj;
 	}
 	
+	function woffToOtf(data) {
+		var numTables = bin.readUshort(data,12);
+		var totalSize = bin.readUint  (data,16);
+		
+		var otf = new Uint8Array(totalSize), toff = 12+numTables*16;
+		
+		bin.writeASCII (otf, 0, "OTTO");
+		bin.writeUshort(otf, 4, numTables);
+		
+		var off = 44;
+		for(var i=0; i<numTables; i++) {
+			var tag = bin.readASCII(data,off,4);
+			var tof = bin.readUint(data,off+4);
+			var cLe = bin.readUint(data,off+8);
+			var oLe = bin.readUint(data,off+12);
+			off+=20;
+			//console.log(i, ":::", tag,tof,oLe);
+			
+			var tab = data.slice(tof,tof+cLe);
+			if(cLe!=oLe) tab = pako["inflate"](tab);
+			
+			var to=12+i*16;
+			bin.writeASCII(otf,to   ,tag);
+			bin.writeUint (otf,to+ 8,toff);
+			bin.writeUint (otf,to+12,oLe );  
+			
+			otf.set(tab,toff);  toff+=oLe;
+		}
+		//console.log(otf);  
+		return otf;
+	}
 	
-	var bin = Typr["B"];
+	
 	var data = new Uint8Array(buff);
+	if(data[0]==0x77) data = woffToOtf(data);
 	
 	var tmap = {};
 	var tag = bin.readASCII(data, 0, 4);  
@@ -67,7 +105,23 @@ Typr["parse"] = function(buff)
 		}
 		return fnts;
 	}
-	else return [readFont(data, 0, 0,tmap)];
+	var fnt = readFont(data, 0, 0,tmap);  //console.log(fnt);  throw "e";
+	var fvar = fnt["fvar"];
+	if(fvar) {
+		var out = [fnt];
+		for(var i=0; i<fvar[1].length; i++) {
+			var fv = fvar[1][i];
+			var obj = {};  out.push(obj);  for(var p in fnt) obj[p]=fnt[p];  
+			obj["_index"]=i;
+			var name = obj["name"]=JSON.parse(JSON.stringify(obj["name"]));
+			name["fontSubfamily"] = fv[0];
+			if(fv[3]==null) fv[3]=(name["fontFamily"]+"-"+name["fontSubfamily"])["replaceAll"](" ","");
+			name["postScriptName"]=fv[3];
+		}
+		return out;
+	}
+	
+	return [fnt];
 }
 
 
@@ -767,7 +821,7 @@ Typr["T"].cmap = {
 		obj.idDelta = [];
 		for(var i=0; i<segCount; i++) {obj.idDelta.push(bin.readShort(data, offset));  offset+=2;}
 		obj.idRangeOffset = rUs(data, offset, segCount);  offset += segCount*2;
-		obj.glyphIdArray  = rUs(data, offset, ((offset0+length)-offset)>>>1);  //offset += segCount*2;
+		obj.glyphIdArray  = rUs(data, offset, ((offset0+length)-offset)>>1);  //offset += segCount*2;
 		return obj;
 	},
 
@@ -1185,8 +1239,6 @@ Typr["T"].maxp = {
 		return obj;
 	}
 };
-
-
 Typr["T"].name = {
 	parseTab : function(data, offset, length)
 	{
@@ -1196,6 +1248,7 @@ Typr["T"].name = {
 		var count  = bin.readUshort(data, offset);  offset += 2;
 		var stringOffset = bin.readUshort(data, offset);  offset += 2;
 		
+		var ooo = offset-6 + stringOffset;
 		//console.log(format,count);
 		
 		var names = [
@@ -1226,7 +1279,6 @@ Typr["T"].name = {
 			"darkPalette"
 		];
 		
-		var offset0 = offset;
 		var rU = bin.readUshort;
 		
 		for(var i=0; i<count; i++)
@@ -1240,7 +1292,7 @@ Typr["T"].name = {
 			//console.log(platformID, encodingID, languageID.toString(16), nameID, length, noffset);
 			
 			
-			var soff = offset0 + count*12 + noffset;
+			var soff = ooo + noffset;
 			var str;
 			if(false){}
 			else if(platformID == 0) str = bin.readUnicode(data, soff, slen/2);
@@ -1261,7 +1313,8 @@ Typr["T"].name = {
 			
 			var tid = "p"+platformID+","+(languageID).toString(16);//Typr._platforms[platformID];
 			if(obj[tid]==null) obj[tid] = {};
-			obj[tid][names[nameID]] = str;
+			var name = names[nameID];  if(name==null)name="_"+nameID;
+			obj[tid][name] = str;
 			obj[tid]["_lang"] = languageID;
 			//console.log(tid, obj[tid]);
 		}
@@ -1525,5 +1578,360 @@ Typr["T"].cpal = {
 			console.log(ets,pts,tot); */
 		}
 		else throw vsn;//console.log("unknown color palette",vsn);
+	}
+};
+
+Typr["T"].GSUB = {
+	parseTab : function(data, offset, length, obj)
+	{
+		//console.log(obj.name.ID);
+		
+		var bin = Typr["B"], rU=bin.readUshort, rI=bin.readUint;
+		
+		
+		var off=offset;
+		var maj = rU(data, off);  off+=2;
+		var min = rU(data, off);  off+=2;
+		var slO = rU(data, off);  off+=2;
+		var flO = rU(data, off);  off+=2;
+		var llO = rU(data, off);  off+=2;
+		
+		//console.log(maj,min,slO,flO,llO);
+		
+		off = offset + flO;
+		
+		var fmap={};
+		var cnt = rU(data,off);  off+=2;
+		for(var i=0; i<cnt; i++) {
+			var tag = bin.readASCII(data,off,4);  off+=4;
+			var fof = rU(data,off);  off+=2;
+			fmap[tag]=true;
+		}
+		//console.log(fmap);
+		return fmap;
+	}
+};
+
+Typr["T"].fvar = {
+	parseTab : function(data, offset, length, obj)
+	{
+		var name = obj["name"];
+		var off = offset;
+		var bin = Typr["B"];
+		var axes = [], inst=[];
+		
+		off+=8;
+		var acnt = bin.readUshort(data,off);  off+=2;
+		off+=2;
+		var icnt = bin.readUshort(data,off);  off+=2;
+		var isiz = bin.readUshort(data,off);  off+=2;
+		
+		for(var i=0; i<acnt; i++) {
+			var tag = bin.readASCII(data,off,4);  
+			var min = bin.readFixed(data,off+4);  
+			var def = bin.readFixed(data,off+8);  
+			var max = bin.readFixed(data,off+12);  
+			var flg = bin.readUshort(data,off+16); 
+			var nid = bin.readUshort(data,off+18);
+			axes.push([tag,min,def,max,flg,name["_"+nid]]);
+			//console.log(tag,min,def,max,flg,nid);
+			off+=20;
+		}
+		for(var i=0; i<icnt; i++) {
+			var snid = bin.readUshort(data,off), pnid=null;
+			var flg  = bin.readUshort(data,off+2);
+			var crd  = [];  for(var j=0; j<acnt; j++) crd.push(bin.readFixed(data,off+4+j*4));
+			off+=4+acnt*4;
+			if((isiz&3)==2) {  pnid = bin.readUshort(data,off);  off+=2;  }
+			inst.push([name["_"+snid],flg,crd,pnid]);
+			//console.log(snid,flg, crd);
+		}
+		
+		return [axes,inst];
+	}
+};
+
+Typr["T"].gvar = (function() {
+	
+	var EMBEDDED_PEAK_TUPLE    = 0x8000;
+	var INTERMEDIATE_REGION    = 0x4000;
+	var PRIVATE_POINT_NUMBERS  = 0x2000;
+	
+	var DELTAS_ARE_ZERO = 0x80;
+	var DELTAS_ARE_WORDS= 0x40;
+	
+	var POINTS_ARE_WORDS= 0x80;
+	
+	var SHARED_POINT_NUMBERS   = 0x8000;
+	
+	var bin = Typr["B"];
+	
+	function readTuple(data, o, acnt) {
+		var tup = [];  for(var j=0; j<acnt; j++) tup.push(bin.readF2dot14(data,o+j*2));
+		return tup;
+	}
+	
+	function readTupleVarHeader(data,off, vcnt,acnt,  eoff) {
+		var out = [];
+		for(var j=0; j<vcnt; j++) {
+			var dsiz = bin.readUshort(data,off);   off+=2; 
+			var tind = bin.readUshort(data,off), flag=tind&0xf000;  tind=tind&0xfff;  off+=2;
+			//console.log(j, dsiz,tind, flag.toString(16));
+			
+			var peak=null, start=null, end=null;
+			if(flag&EMBEDDED_PEAK_TUPLE) {  peak =readTuple(data,off,acnt);  off+=acnt*2;  }
+			if(flag&INTERMEDIATE_REGION) {  start=readTuple(data,off,acnt);  off+=acnt*2;  }
+			if(flag&INTERMEDIATE_REGION) {  end  =readTuple(data,off,acnt);  off+=acnt*2;  }
+			out.push([dsiz,tind,flag,start,peak,end]);
+		}
+		return out;
+	}
+	
+	// Packed "point" numbers
+	function readPointNumbers(data, off, gid) {
+		var cnt = data[off];  off++;  if(cnt==0) return [[],off];
+		if(127<cnt) {  cnt = ((cnt & 127) << 8) | data[off++];  }
+		
+		//if(gid==116) console.log("---",cnt);
+		var pts = [], last=0;  // point number data runs
+		while(pts.length<cnt) {
+			var v = data[off];  off++;
+			var wds = (v&POINTS_ARE_WORDS)!=0;  v=(v&127)+1;
+			//if(gid==116) console.log("-",v);
+			for(var i=0; i<v; i++) {  
+				var dif = 0;
+				if(wds) {  dif=bin.readUshort(data,off);  off+=2;  }
+				else    {  dif=data[off];  off++;  }
+				//if(gid==116) console.log(dif);
+				last+=dif;
+				pts.push(last); 
+			}
+		}
+		//console.log(pts);
+		return [pts,off];
+		
+		
+		//throw "e";
+	}
+	
+	
+	function parseTab(data, offset, length, obj) {
+		var off = offset+4;
+		var acnt = bin.readUshort(data,off);  off+=2;
+		var tcnt = bin.readUshort(data,off);  off+=2;
+		var toff = bin.readUint  (data,off);  off+=4;
+		var gcnt = bin.readUshort(data,off);  off+=2;
+		var flgs = bin.readUshort(data,off);  off+=2;
+		
+		var goff = bin.readUint  (data,off);  off+=4;
+		
+		// glyphVariationDataOffsets
+		var offs = [];  for(var i=0; i<gcnt+1; i++) offs.push(bin.readUint(data,off+i*4));
+		
+		
+		// sharedTuples
+		var tups = [], mins=[], maxs=[];  off=offset+toff;
+		for(var i=0; i<tcnt; i++) {
+			var peak = readTuple(data,off+i*acnt*2,acnt), imin=[], imax=[];  tups.push(peak);  mins.push(imin);  maxs.push(imax);
+			for(var k=0; k<acnt; k++) {
+				imin[k]=Math.min(peak[k],0);
+				imax[k]=Math.max(peak[k],0);
+			}
+		}
+		//console.log(tups);
+		
+		//console.log(acnt,stcnt,stoff,gcnt,flgs,goff);
+		
+		var i8 = new Int8Array(data.buffer);
+		
+		// GlyphVariationData table array
+		var tabs = [];
+		for(var i=0; i<gcnt; i++) {
+			//console.log("-------",i);
+			off=offset + goff + offs[i];
+			// tupleVariationCount
+			var vcnt = bin.readUshort(data,off);  off+=2;  //if((vcnt>>>12)!=0) throw "e";
+			
+			var snum = vcnt&SHARED_POINT_NUMBERS;  vcnt&=0xfff;
+			//  offset to the serialized data
+			var soff = bin.readUshort(data,off);  off+=2;
+			
+			var hdr = readTupleVarHeader(data,off,vcnt,acnt,  offset+goff+offs[i+1]);
+			
+			var tab = [];  tabs.push(tab);
+			// Serialized Data
+			off=offset + goff + offs[i] + soff;
+			
+			var sind = null;
+			if(snum) {
+				var oo = readPointNumbers(data,off,i);
+				sind=oo[0];  off=oo[1];
+			}
+			
+			for(var j=0; j<vcnt; j++) {
+				var vr = hdr[j], end=off+vr[0];  //console.log(vr);  console.log(data.slice(off,off+vr[0]));
+				
+				var ind = sind;
+				if(vr[2]&PRIVATE_POINT_NUMBERS) {
+					var oo = readPointNumbers(data,off,i);
+					ind=oo[0];  off=oo[1];
+				}
+				// read packed deltas (delta runs)
+				var ds = [];
+				while(off<end) {
+					var cb = data[off++];  // control byte;
+					var cnt = (cb & 0x3f)+1;
+					if     (cb & DELTAS_ARE_ZERO ) {  for(var k=0; k<cnt; k++) ds.push(0);  }
+					else if(cb & DELTAS_ARE_WORDS) {  for(var k=0; k<cnt; k++) ds.push(bin.readShort(data,off+k*2));  off+=cnt*2;  }
+					else                           {  for(var k=0; k<cnt; k++) ds.push(i8[off+k]);  off+=cnt;  }
+				}
+				//if(ind) console.log(ind, ds);
+				var ti = vr[1];
+				
+				tab.push([[
+						vr[3]?vr[3]:mins[ti],
+						vr[4]?vr[4]:tups[ti],
+						vr[5]?vr[5]:maxs[ti]
+					],ds,ind.length==0?null:ind]);
+				
+				if(ind.length!=0 && ind.length*2!=ds.length) throw "e";
+				//if(i==116) console.log(ind, ds);
+			}
+		}
+		return tabs;
+	}
+	
+	return {parseTab:parseTab};
+})();
+
+Typr["T"].avar = {
+	parseTab : function(data, offset, length, obj)
+	{
+		var off = offset;
+		var bin = Typr["B"], out = [];
+		
+		off+=6;
+		var acnt = bin.readUshort(data,off);  off+=2;
+		
+		for(var ai=0; ai<acnt; ai++) {
+			var cnt = bin.readUshort(data,off);  off+=2;
+			var poly = [];  out.push(poly);
+			for(var i=0; i<cnt; i++) {
+				var x = bin.readF2dot14(data,off);
+				var y = bin.readF2dot14(data,off+2);  off+=4;
+				poly.push(x,y);
+			}
+		}
+		
+		return out;
+	}
+};
+
+Typr["T"].HVAR = {
+	parseTab : function(data, offset, length, obj)
+	{
+		var off = offset, oo = offset;
+		var bin = Typr["B"], out = [];
+		
+		//console.log(data.slice(off));
+		off+=4;
+		
+		var varO = bin.readUint(data,off);  off+=4;
+		var advO = bin.readUint(data,off);  off+=4;
+		var lsbO = bin.readUint(data,off);  off+=4;
+		var rsbO = bin.readUint(data,off);  off+=4;
+		if(lsbO!=0 || rsbO!=0) throw lsbO;
+		
+		//console.log(varO,advO,lsbO,rsbO);
+		
+		off = oo+varO;  // item variation store
+		
+		// ItemVariationStore 
+		var ioff = off;
+		
+		var fmt = bin.readUshort(data,off);  off+=2;  if(fmt!=1) throw "e";
+		var vregO = bin.readUint(data,off);  off+=4;
+		// itemVariationDataCount
+		var vcnt = bin.readUshort(data,off);  off+=2;
+		
+		var offs = [];  for(var i=0; i<vcnt; i++) offs.push(bin.readUint(data,off+i*4));  off+=vcnt*4;  //if(offs.length!=1) throw "e";
+		//console.log(vregO,vcnt,offs);		
+		
+		off = ioff+vregO;
+		var acnt = bin.readUshort(data,off);  off+=2;
+		var rcnt = bin.readUshort(data,off);  off+=2;
+		
+		var regs = [];
+		for(var i=0; i<rcnt; i++) {
+			var crd = [[],[],[]];  regs.push(crd);
+			for(var j=0; j<acnt; j++) {
+				crd[0].push(bin.readF2dot14(data,off+0));
+				crd[1].push(bin.readF2dot14(data,off+2));
+				crd[2].push(bin.readF2dot14(data,off+4));
+				off+=6;
+			}
+		}
+		//console.log(acnt, rcnt, regs);
+		
+		
+		var i8 = new Int8Array(data.buffer);
+		var varStore = [];
+		for(var i=0; i<offs.length; i++) {
+			// ItemVariationData 
+			off = oo+varO+offs[i];  var vdata=[];  varStore.push(vdata);
+			var icnt = bin.readUshort(data,off);  off+=2;  // itemCount
+			var dcnt = bin.readUshort(data,off);  off+=2;  if(dcnt&0x8000) throw "e";
+			var rcnt = bin.readUshort(data,off);  off+=2;  
+			var ixs = [];  for(var j=0; j<rcnt; j++) ixs.push(bin.readUshort(data,off+j*2));  off+=rcnt*2;
+			//console.log(icnt,dcnt,rcnt,ixs);
+			//console.log(data.slice(off));
+			
+			for(var k=0; k<icnt; k++) {  // deltaSets
+				var deltaData = [];  //vdata.push(deltaData);
+				for(var ri=0; ri<rcnt; ri++) {
+					deltaData.push(ri<dcnt ? bin.readShort(data,off) : i8[off]);
+					off+= ri<dcnt ? 2 : 1;
+					
+				}
+				var dd = new Array(regs.length);  dd.fill(0);  vdata.push(dd);
+				for(var j=0; j<ixs.length; j++) dd[ixs[j]] = deltaData[j];
+			}
+		}
+		
+		//console.log(varStore);
+		
+		// VariationRegionList
+		
+		
+		
+		off = oo+advO;  // advance widths
+		
+		// DeltaSetIndexMap 
+		
+		var fmt  = data[off++];  if(fmt!=0) throw "e";
+		var entryFormat = data[off++];
+		
+		var mapCount = bin.readUshort(data,off);  off+=2;
+		
+		var INNER_INDEX_BIT_COUNT_MASK = 0x0f;
+		var MAP_ENTRY_SIZE_MASK = 0x30;
+		var entrySize = ((entryFormat & MAP_ENTRY_SIZE_MASK) >> 4) + 1;  //if(entrySize!=1) throw entrySize;
+		
+		//console.log(fmt, entryFormat, mapCount, entrySize);
+		
+		var dfs=[];
+		for(var i=0; i<mapCount; i++) {
+			var entry=0;
+			if(entrySize==1) entry = data[off++];
+			else {  entry = bin.readUshort(data,off);  off+=2;  }
+			var outerIndex = entry >> ((entryFormat & INNER_INDEX_BIT_COUNT_MASK) + 1);
+			var innerIndex = entry & ((1 << ((entryFormat & INNER_INDEX_BIT_COUNT_MASK) + 1)) - 1);
+			//map.push(outerIndex,innerIndex);
+			dfs.push(varStore[outerIndex][innerIndex]);
+			//console.log(outerIndex,innerIndex);
+			//console.log(i,varStore[outerIndex][innerIndex]);
+		}
+		
+		return [regs,dfs];
 	}
 };
