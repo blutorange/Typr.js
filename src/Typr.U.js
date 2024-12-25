@@ -23,6 +23,7 @@ Typr["U"] = function() {
 		return [0,0,0,0];
 	}
 	function shape(font,str,prm) {
+		if(prm==null) prm={};
 		var ltr = prm["ltr"], fts = prm["fts"], axs=prm["axs"];
 		if(font["fvar"] && axs==null) axs = font["fvar"][1][font["_index"]][2];
 		
@@ -40,7 +41,7 @@ Typr["U"] = function() {
 			var padj = getGlyphPosition(font, gls,i,ltr);
 			var gid = gls[i];  //console.log(gid);
 			var ax=font["hmtx"].aWidth[gid]+padj[2];
-			if(HVAR) { //ax+=S*HVAR[1][gid][0];
+			if(HVAR && HVAR[1][gid]) { //ax+=S*HVAR[1][gid][0];
 				var difs = HVAR[1][gid];  //console.log(difs);
 				for(var j=0; j<HVAR[0].length; j++) {
 					ax += _interpolate(HVAR[0][j],axs) * difs[j];
@@ -304,14 +305,23 @@ Typr["U"] = function() {
 		}
 		return nv;
 	}
-	function interpolateDeltas(dfs,ind,xs,ys) {
+	function interpolateDeltas(dfs,ind,xs,ys, endPts) {
 		var N=xs.length, ndfs = new Array(N*2+8);  ndfs.fill(0);
 		for(var i=0; i<N; i++) {
 			var dx=0, dy=0, ii=ind.indexOf(i);
 			if(ii!=-1) {  dx=dfs[ii];  dy=dfs[ind.length+ii];  }
 			else {
-				var i0 = ind.length-1, i1=0;  if(ind[i0]>=N) i0--;
-				for(var j=0; j<ind.length; j++) {  var v=ind[j];  if(v<N) { if(v<i) i0=j;  if(i<v) {  i1=j;  break;  }  }  }
+				var cmp = 0;  while(endPts[cmp]<i) cmp++;
+				var cmp0 = cmp==0 ? 0 : endPts[cmp-1]+1;
+				var cmp1 = endPts[cmp];
+				
+				var i0=-1, i1=-1;
+				
+				for(var j=0; j<ind.length; j++) {  var v=ind[j];  if(v<cmp0 || v>cmp1 || v>=N) continue;  i0=j;  if(i1==-1) i1=j;   }
+				for(var j=0; j<ind.length; j++) {  var v=ind[j];  if(v<cmp0 || v>cmp1 || v>=N) continue;  if(v<i) i0=j;  if(i<v) {  i1=j;  break;  }   }
+				
+				//var i0 = ind.length-1, i1=0;  if(ind[i0]>=N) i0--;
+				//for(var j=0; j<ind.length; j++) {  var v=ind[j];  if(v<N) { if(v<i) i0=j;  if(i<v) {  i1=j;  break;  }  }  }
 				for(var ax=0; ax<2; ax++) {
 					var crd = ax==0 ? xs : ys, ofs=ax*ind.length, dlt=0;
 					var c0 = crd[ind[i0]], c1=crd[ind[i1]], cC = crd[i];
@@ -338,8 +348,7 @@ Typr["U"] = function() {
 					if(ax==0) dx=dlt;  else dy=dlt;
 				}
 			}
-			ndfs[i]=dx;
-			ndfs[i+N+4]=dy;
+			ndfs[i]=dx;  ndfs[N+4+i]=dy;
 		}
 		return ndfs;			
 	}
@@ -356,8 +365,9 @@ Typr["U"] = function() {
 				var S = _interpolate(axv,axs);  if(S<1e-9) continue;
 				var dfs = gv[vi][1], ind=gv[vi][2];  //if(dfs.length!=2*xs.length+8) throw "e";
 				//console.log(vi,S,axv,ind,dfs);
-				if(ind) {  dfs = gv[vi][1] = interpolateDeltas(dfs,ind,xs,ys);  gv[vi][2] = null;  }
+				if(ind) {  dfs = gv[vi][1] = interpolateDeltas(dfs,ind,xs,ys,gl.endPts);  gv[vi][2] = null;  }
 				//if(ind==null)
+				if(dfs.length==xs.length*2+8)
 				for(var i=0; i<xs.length; i++) {
 					xs[i]+=S*dfs[i];
 					ys[i]+=S*dfs[i+xs.length+4];
@@ -581,7 +591,7 @@ Typr["U"] = function() {
 					nbmp = nd.buff;  w=nd.w;  h=nd.h;  scl*=2;
 				}
 				
-				if(__cnv==null) {  __cnv = document.createElement("canvas");  __ct=cnv.getContext("2d");  }
+				if(__cnv==null) {  __cnv = document.createElement("canvas");  __ct=__cnv.getContext("2d");  }
 				if(__cnv.width!=w || __cnv.height!=h) {  __cnv.width=w;  __cnv.height=h;  }
 				
 				__ct.putImageData(new ImageData(new Uint8ClampedArray(nbmp.buffer),w,h),0,0);
@@ -1068,7 +1078,7 @@ Typr["U"] = function() {
 						//console.log(fts);
 					}
 					var vdat = 0;
-					if(axs) {
+					if(axs && fnt["fvar"]) {
 						var axes=fnt["fvar"][0];  //console.log(axes, axs);
 						vdat = exp["malloc"](8*axs.length);
 						for(var i=0; i<axs.length; i++) {
