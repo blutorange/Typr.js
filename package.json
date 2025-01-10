@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "TypeScript+NPM fork of https://github.com/photopea/Typr.js",
   "type": "module",
-  "packageManager": "yarn@4.5.3",
+  "packageManager": "yarn@4.6.0",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "exports": {
@@ -33,6 +33,10 @@
     "src"
   ],
   "devDependencies": {
+    "@types/pako": "^2",
     "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "pako": "^2.1.0"
   }
 }

@@ -1,4 +1,4 @@
-
+import pako from "pako";
 
 var Typr = {};
 

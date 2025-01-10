@@ -5,13 +5,29 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@types/pako@npm:^2":
+  version: 2.0.3
+  resolution: "@types/pako@npm:2.0.3"
+  checksum: 10c0/45119ac3c4e8a77317c35493327039b74e333562f06ce038048228918d8ddfaa7958125aab960d1565b3861046022754c414dba1eecb210c44a32c415956bee2
+  languageName: node
+  linkType: hard
+
 "@xenorange/typr.js@workspace:.":
   version: 0.0.0-use.local
   resolution: "@xenorange/typr.js@workspace:."
   dependencies:
+    "@types/pako": "npm:^2"
+    pako: "npm:^2.1.0"
     typescript: "npm:^5.7.0"
   languageName: unknown
   linkType: soft
+
+"pako@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "pako@npm:2.1.0"
+  checksum: 10c0/8e8646581410654b50eb22a5dfd71159cae98145bd5086c9a7a816ec0370b5f72b4648d08674624b3870a521e6a3daffd6c2f7bc00fdefc7063c9d8232ff5116
+  languageName: node
+  linkType: hard
 
 "typescript@npm:^5.7.0":
   version: 5.7.2
