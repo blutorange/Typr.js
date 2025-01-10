@@ -545,54 +545,6 @@ export interface SvgUtil {
 }
 
 /**
- * Builder for {@link VectorPath}. Each method is given a {@link VectorPath} object
- * and mutates it by adding a command to the {@link VectorPath.cmds} array and
- * also adding the coordinates to the {@link VectorPath.crds} array.
- */
-export interface VectorPathBuilder {
-    /**
-     * Move the pointer to X,Y.
-     * @param p Path to modify.
-     * @param x X coordinate.
-     * @param y Y coordinate.
-     */
-    MoveTo: (p: VectorPath, x: number, y: number) => void;
-
-    /**
-     * Draw a line from the current point to X,Y.
-     * @param p Path to modify.
-     * @param x X coordinate.
-     * @param y Y coordinate.
-     */
-    LineTo: (p: VectorPath, x: number, y: number) => void;
-    /**
-     * Draw a cubic Bézier curve from the previous position to X3,Y3, using X1,Y1 and X2,Y2 as control points.
-     * @param p Path to modify.
-     * @param x1 X coordinate of the first control point.
-     * @param y1 Y coordinate of the first control point.
-     * @param x2 X coordinate of the second control point.
-     * @param y2 Y coordinate of the second control point.
-     * @param x3 X coordinate of the final point.
-     * @param y3 Y coordinate of the final point.
-     */
-    CurveTo: (p: VectorPath, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) => void;
-    /**
-     * Draw a quadratic Bézier curve from the previous position to X2,Y2, using X1,Y1 as a control point.
-     * @param p Path to modify.
-     * @param x1 X coordinate of the control point.
-     * @param y1 Y coordinate of the control point.
-     * @param x2 X coordinate of the final point.
-     * @param y2 Y coordinate of the final point.
-     */
-    qCurveTo: (p: VectorPath, x1: number, y1: number, x2: number, y2: number) => void;
-    /**
-     * Draw a line to the first point to finish the outline.
-     * @param p Path to modify.
-     */
-    ClosePath: (p: VectorPath) => void;
-}
-
-/**
  * Possible commands for {@link VectorPath.cmds}.
  *
  * - `M` - (1 coordinate (X,Y)) Move the pointer to X,Y.
@@ -729,13 +681,6 @@ export interface Util {
      * @param callback A callback function, that is called when the HarfBuzz is loaded and ready to use.
      */
     initHB: (url: string | URL, callback: () => void) => void;
-
-    /**
-     * Builder for {@link VectorPath}. Each method is given a {@link VectorPath} object
-     * and mutates it by adding a command to the {@link VectorPath.cmds} array and
-     * also adding the coordinates to the {@link VectorPath.crds} array.
-     */
-    P: VectorPathBuilder;
 
     /**
      * Utility functions for working with SVG.

@@ -65,7 +65,7 @@ function assertHasPublicProperties(obj, properties, message) {
     const publicProps = Object.keys(obj).filter(x => !x.startsWith("_")).sort();
     const missing = sorted.filter(x => !publicProps.includes(x));
     const extra = publicProps.filter(x => !sorted.includes(x));
-    assertArrayEquals(sorted, publicProps, `${message ?? "Object does not have the expected public properties"}. Missing are ${missing.join(", ")}. Extra are ${extra.join(", ")}`);
+    assertArrayEquals(sorted, publicProps, `${message ?? "Object does not have the expected public properties"}. Missing are <${missing.join(", ")}>. Extra are <${extra.join(", ")}>`);
 }
 
 assertObject(Typr, "Typr is not defined");
@@ -175,7 +175,6 @@ assertFunction(Typr.T.sbix.parseTab, "Typr.T.sbix.parseTab is not defined");
 
 assertObject(Typr.U, "Typr.U is not defined");
 assertHasPublicProperties(Typr.U, [
-    "P",
     "SVG",
     "SVGToPath",
     "codeToGlyph",
@@ -194,20 +193,6 @@ assertFunction(Typr.U.pathToContext, "Typr.U.pathToContext is not defined");
 assertFunction(Typr.U.pathToSVG, "Typr.U.pathToSVG is not defined");
 assertFunction(Typr.U.shape, "Typr.U.shape is not defined");
 assertFunction(Typr.U.shapeToPath, "Typr.U.shapeToPath is not defined");
-
-assertObject(Typr.U.P, "Typr.U.P is not defined");
-assertHasPublicProperties(Typr.U.P, [
-    "ClosePath",
-    "CurveTo",
-    "LineTo",
-    "MoveTo",
-    "qCurveTo"
-], "Typr.U.P has unexpected exported properties");
-assertFunction(Typr.U.P.ClosePath, "Typr.U.ClosePath is not defined");
-assertFunction(Typr.U.P.CurveTo, "Typr.U.CurveTo is not defined");
-assertFunction(Typr.U.P.LineTo, "Typr.U.LineTo is not defined");
-assertFunction(Typr.U.P.MoveTo, "Typr.U.MoveTo is not defined");
-assertFunction(Typr.U.P.qCurveTo, "Typr.U.qCurveTo is not defined");
 
 assertObject(Typr.U.SVG, "Typr.U.SVG is not defined");
 assertHasPublicProperties(Typr.U.SVG, [
